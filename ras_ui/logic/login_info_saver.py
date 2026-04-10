@@ -214,15 +214,15 @@ class LoginInfoSaver:
         return db_path
     
     def _collect_friend_rows_from_all_pages(self, driver: webdriver.Chrome) -> list[dict[str, str]]:
-        visited_page_urls: set[str] = set()
+        visited_page_markers: set[str] = set()
         unique_rows_by_url: "OrderedDict[str, dict[str, str]]" = OrderedDict()
         fallback_rows: list[dict[str, str]] = []
 
         while True:
-            current_url = driver.current_url
-            if current_url in visited_page_urls:
+            current_marker = self._build_page_marker(driver)
+            if current_marker in visited_page_markers:
                 break
-            visited_page_urls.add(current_url)
+            visited_page_markers.add(current_marker)
 
             for row in self._parse_visible_rows(driver):
                 detail_url = row["detail_url"]
@@ -231,10 +231,8 @@ class LoginInfoSaver:
                 else:
                     fallback_rows.append(row)
 
-            next_page_url = self._find_unvisited_page_url(driver, visited_page_urls)
-            if not next_page_url:
+            if not self._go_to_next_page(driver, visited_page_markers):
                 break
-            driver.get(next_page_url)
 
         return [*unique_rows_by_url.values(), *fallback_rows]
 
@@ -273,16 +271,54 @@ class LoginInfoSaver:
                 return urljoin(current_url, href)
         return "-"
 
-    @staticmethod
-    def _find_unvisited_page_url(driver: webdriver.Chrome, visited_page_urls: set[str]) -> str | None:
-        page_anchors = driver.find_elements(By.CSS_SELECTOR, "ul.pagenavi li a[href]")
-        for anchor in page_anchors:
-            href = (anchor.get_attribute("href") or "").strip()
-            if not href:
+    def _go_to_next_page(self, driver: webdriver.Chrome, visited_page_markers: set[str]) -> bool:
+        current_marker = self._build_page_marker(driver)
+        pager_items = driver.find_elements(By.CSS_SELECTOR, "ul.pagenavi li")
+
+        for item in pager_items:
+            classes = (item.get_attribute("class") or "").lower()
+            if "disabled" in classes:
                 continue
-            absolute_href = urljoin(driver.current_url, href)
-            if absolute_href not in visited_page_urls:
-                return absolute_href
+
+            anchors = item.find_elements(By.CSS_SELECTOR, "a")
+            if not anchors:
+                continue
+            anchor = anchors[0]
+            text = self._normalize_cell_text(anchor.text)
+
+            if not text.isdigit():
+                continue
+
+            if f"page:{text}" in visited_page_markers:
+                continue
+
+            try:
+                driver.execute_script("arguments[0].click();", anchor)
+                WebDriverWait(driver, 10).until(lambda d: self._build_page_marker(d) != current_marker)
+                return True
+            except WebDriverException:
+                continue
+        return False
+
+    def _build_page_marker(self, driver: webdriver.Chrome) -> str:
+        page_number = self._get_current_page_number(driver)
+        if page_number:
+            return f"page:{page_number}"
+        return f"url:{driver.current_url}"
+    
+    @staticmethod
+    def _get_current_page_number(driver: webdriver.Chrome) -> str | None:
+        pager_items = driver.find_elements(By.CSS_SELECTOR, "ul.pagenavi li")
+        for item in pager_items:
+            classes = (item.get_attribute("class") or "").lower()
+            if "disabled" not in classes:
+                continue
+            anchors = item.find_elements(By.CSS_SELECTOR, "a")
+            if not anchors:
+                continue
+            text = " ".join((anchors[0].text or "").split())
+            if text.isdigit():
+                return text
         return None
 
     @staticmethod
