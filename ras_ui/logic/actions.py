@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+import json
 from datetime import datetime
+from pathlib import Path
 from tkinter import messagebox
 
 from ras_ui.logic.login_info_saver import (
@@ -19,7 +21,26 @@ class ActionHandler:
         self._show_implementing("ポーリング実行")
 
     def on_immediate_execute(self) -> None:
-        self._show_implementing("即時実行")
+        timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        self.add_log(f"[{timestamp}] 保存済みログイン情報を使ってブラウザを起動します")
+
+        saver = LoginInfoSaver()
+        try:
+            driver = saver.load_session_and_open(Path("data/login_session.json"))
+            opened_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.add_log(f"[{opened_at}] ログイン済み画面を開きました: {driver.current_url}")
+            messagebox.showinfo(
+                "即時実行",
+                "保存済みセッションでブラウザを起動しました。\nログイン状態を確認してください。",
+            )
+        except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
+            error_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.add_log(f"[{error_at}] セッション読込エラー: {exc}")
+            messagebox.showerror("エラー", f"保存済みログイン情報の読込に失敗しました。\n{exc}")
+        except (NoSuchElementException, WebDriverException) as exc:
+            error_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.add_log(f"[{error_at}] 即時実行エラー: {exc}")
+            messagebox.showerror("エラー", f"即時実行に失敗しました。\n{exc}")
 
     def on_save_login_info(self) -> None:
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

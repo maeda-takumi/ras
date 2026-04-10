@@ -102,6 +102,60 @@ class LoginInfoSaver:
         )
         return self.setting.output_path
 
+    def load_session_and_open(self, session_path: Path | None = None) -> webdriver.Chrome:
+        target_path = session_path or self.setting.output_path
+        session_data = self._read_session_file(target_path)
+
+        options = webdriver.ChromeOptions()
+        options.add_argument("--disable-popup-blocking")
+
+        driver = webdriver.Chrome(options=options)
+        driver.maximize_window()
+
+        target_url = session_data.get("target_url") or self.setting.login_url
+        login_origin = self.setting.login_url
+        driver.get(login_origin)
+
+        for cookie in session_data.get("cookies", []):
+            normalized_cookie = self._normalize_cookie(cookie)
+            if normalized_cookie:
+                try:
+                    driver.add_cookie(normalized_cookie)
+                except WebDriverException:
+                    continue
+
+        driver.execute_script("window.localStorage.clear(); window.sessionStorage.clear();")
+        for key, value in session_data.get("local_storage", {}).items():
+            driver.execute_script("window.localStorage.setItem(arguments[0], arguments[1]);", key, value)
+        for key, value in session_data.get("session_storage", {}).items():
+            driver.execute_script("window.sessionStorage.setItem(arguments[0], arguments[1]);", key, value)
+
+        driver.get(target_url)
+        return driver
+
+    @staticmethod
+    def _read_session_file(path: Path) -> dict[str, Any]:
+        if not path.exists():
+            raise FileNotFoundError(f"セッションファイルが見つかりません: {path}")
+        with path.open("r", encoding="utf-8") as fp:
+            data = json.load(fp)
+        if not isinstance(data, dict):
+            raise ValueError("セッションファイルの形式が不正です")
+        return data
+
+    @staticmethod
+    def _normalize_cookie(cookie: dict[str, Any]) -> dict[str, Any] | None:
+        name = cookie.get("name")
+        value = cookie.get("value")
+        if not name or value is None:
+            return None
+
+        normalized: dict[str, Any] = {"name": name, "value": value}
+        for key in ("domain", "path", "secure", "httpOnly", "sameSite", "expiry"):
+            if key in cookie and cookie[key] is not None:
+                normalized[key] = cookie[key]
+        return normalized
+    
     @staticmethod
     def _find_first(
         driver: webdriver.Chrome,
