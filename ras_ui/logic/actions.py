@@ -8,6 +8,7 @@ from pathlib import Path
 from tkinter import messagebox
 
 from ras_ui.logic.login_info_saver import (
+    InvalidSessionIdException,
     LoginInfoSaver,
     NoSuchElementException,
     WebDriverException,
@@ -61,13 +62,16 @@ class ActionHandler:
             done_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             self.add_log(f"[{done_at}] ログイン情報を保存しました: {saved_path}")
             messagebox.showinfo("完了", f"ログイン情報を保存しました\n{saved_path}")
-        except (NoSuchElementException, WebDriverException) as exc:
+        except (NoSuchElementException, WebDriverException, InvalidSessionIdException) as exc:
             error_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             self.add_log(f"[{error_at}] ログイン情報保存エラー: {exc}")
             messagebox.showerror("エラー", f"ログイン情報の保存に失敗しました。\n{exc}")
         finally:
             if driver is not None:
-                driver.quit()
+                try:
+                    driver.quit()
+                except InvalidSessionIdException:
+                    pass
 
     def _show_implementing(self, action_name: str) -> None:
         message = f"{action_name}：実装中です"

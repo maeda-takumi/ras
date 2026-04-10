@@ -9,13 +9,14 @@ from pathlib import Path
 from typing import Any
 
 from selenium import webdriver
-from selenium.common.exceptions import NoSuchElementException, WebDriverException
+from selenium.common.exceptions import InvalidSessionIdException, NoSuchElementException, WebDriverException
 from selenium.webdriver.common.by import By
 
 
 @dataclass(frozen=True)
 class LoginSetting:
     login_url: str = "https://step.lme.jp/"
+    friend_list_url: str = "https://step.lme.jp/basic/friendlist"
     login_id: str = "miomama0605@gmail.com"
     login_password: str = "20250606@Mio"
     output_path: Path = Path("data/login_session.json")
@@ -69,9 +70,15 @@ class LoginInfoSaver:
         return driver
 
     def save_session(self, driver: webdriver.Chrome) -> Path:
+        try:
+            current_url = driver.current_url
+        except InvalidSessionIdException as exc:
+            raise WebDriverException(
+                "ブラウザ接続が切断されました。ログイン完了後にブラウザを閉じず、同じウィンドウでOKを押してください。"
+            ) from exc
         payload: dict[str, Any] = {
             "saved_at": datetime.now().isoformat(),
-            "target_url": driver.current_url,
+            "target_url": current_url,
             "cookies": driver.get_cookies(),
             "local_storage": driver.execute_script(
                 """
@@ -112,7 +119,6 @@ class LoginInfoSaver:
         driver = webdriver.Chrome(options=options)
         driver.maximize_window()
 
-        target_url = session_data.get("target_url") or self.setting.login_url
         login_origin = self.setting.login_url
         driver.get(login_origin)
 
@@ -130,7 +136,7 @@ class LoginInfoSaver:
         for key, value in session_data.get("session_storage", {}).items():
             driver.execute_script("window.sessionStorage.setItem(arguments[0], arguments[1]);", key, value)
 
-        driver.get(target_url)
+        driver.get(self.setting.friend_list_url)
         return driver
 
     @staticmethod
@@ -171,6 +177,7 @@ class LoginInfoSaver:
 __all__ = [
     "LoginInfoSaver",
     "LoginSetting",
+    "InvalidSessionIdException",
     "NoSuchElementException",
     "WebDriverException",
 ]
