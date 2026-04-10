@@ -1,0 +1,211 @@
+{
+  "saved_at": "2026-04-10T12:07:34.756961",
+  "target_url": "https://step.lme.jp/admin/home",
+  "cookies": [
+    {
+      "domain": ".lme.jp",
+      "expiry": 1807326423,
+      "httpOnly": false,
+      "name": "_clck",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "15lqsao%5E2%5Eg53%5E0%5E2291"
+    },
+    {
+      "domain": ".lme.jp",
+      "expiry": 1783566424,
+      "httpOnly": false,
+      "name": "_gcl_au",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "1.1.2098243007.1775790424"
+    },
+    {
+      "domain": "step.lme.jp",
+      "httpOnly": false,
+      "name": "ROUTEID",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": ".8"
+    },
+    {
+      "domain": ".lme.jp",
+      "expiry": 1807326423,
+      "httpOnly": false,
+      "name": "_yjsu_yjad",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "1775790423.bab54b7a-6b8a-4499-9853-0529b68f462d"
+    },
+    {
+      "domain": ".lme.jp",
+      "expiry": 1775790483,
+      "httpOnly": false,
+      "name": "_gat_UA-165869955-5",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "1"
+    },
+    {
+      "domain": "step.lme.jp",
+      "expiry": 1775963248,
+      "httpOnly": false,
+      "name": "XSRF-TOKEN",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "eyJpdiI6InQ0WnJ0WjYwbzJ1R0N0RHBRR1UwOHc9PSIsInZhbHVlIjoiaTlVaVgrQkZQZVU1Szk5YzhqMkpxMFRYN1lPSytxdkFZMWM2NFVvbk9SN3pkc0orSWRzQUxUc0M5TWdkdVVsMyIsIm1hYyI6IjcyYTVmNDYwYzVlOWY4NGUwYWM4MjhiN2Y5M2NmNGE1ZGYxZTM4NDgxMWNkZmFiYWE2ZTViNGIzYzRkNTBiZTgifQ%3D%3D"
+    },
+    {
+      "domain": "step.lme.jp",
+      "expiry": 1775963248,
+      "httpOnly": true,
+      "name": "IXM0RXOv6Pmv4dhYfgWYcspsWuDaacJFl93jEde0",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "eyJpdiI6IllsMTZYQ3FxaDZlYU1XXC9WZjhvR2Z3PT0iLCJ2YWx1ZSI6IlMzZkE2TGVaMEZ0Tkh1bUk4T3N0clpBTkJ3RnVFeWlnbHQxK2hXM29yVnFHa24rcWxvRkhHXC9BSXo4c01HbHc5cHNlZCtUU3d5cG80K1Y0WDZYRWNqM2NhcFlwMDdNUkIwakFhbm5OZkxqaWxSUm1nQnl3XC9ocitRbVRDeHY1TzlDVUtJa3FDdmUwdkR0Z3VrNjdadmNMT21LZ2VURVNwSzNENmtBXC96S05VbVVFVTZEdWFsaWIyQmNDbzlZQWVJVkJiTmR3ZUV0cEJLaUE3bDJYd0grVitlOU5IT25CSWthSTNqTkdcL0JQREFEa3JFTGJmTGRPSHRMNlhFY0hVU2VWMjVSRHVnUGhVRG9VeG43SEt4bDdicGdFb1NhdEZLOFd6U1dEdTNNRnlvZUhDXC91UnVWVnJ0djRFQjhJU1l3R21Hd21pdVBpVU5KdmlBUTZwaDQ0cnZveU8wOUdCYUo2SDZ6T3IybVpHNVhMQkFJZlwvSnpkeWZKaWJjTXI2bHloSVRnN2pwVUxCQmNtbHdiMk4wT1c1MjlZYjlqSTBaaU9oa3NYcTFsY2dXTzlEZEZwdHAxMmkrbnN0bE82RUs3QWh6OWpcLzEwUVBQQWUrRXNZMXo3aUZ0WmNSOGxqTGFheWpYQ0t1ZEgzRGhxR05VN0g1aVMwcVl6a040d0diRmRzZCIsIm1hYyI6IjdlMWU0ZDU1MzY1NWViZjQ1ODEzNGM4Yzg3NWE4ZDRlNGQ0NTIzMDhlMDVjNzEyNGE1MGNmZjk4OGRkMTNlOWEifQ%3D%3D"
+    },
+    {
+      "domain": ".lme.jp",
+      "expiry": 1809486448,
+      "httpOnly": false,
+      "name": "_uetvid",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "597cce80348a11f1a0bbe1944bdf0762"
+    },
+    {
+      "domain": ".lme.jp",
+      "expiry": 1775876848,
+      "httpOnly": false,
+      "name": "_uetsid",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "597c8ac0348a11f1b2adcbc49406270c"
+    },
+    {
+      "domain": ".lme.jp",
+      "expiry": 1775876849,
+      "httpOnly": false,
+      "name": "_clsk",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "1lu84li%5E1775790449424%5E2%5E1%5Eo.clarity.ms%2Fcollect"
+    },
+    {
+      "domain": ".step.lme.jp",
+      "expiry": 1775792248,
+      "httpOnly": false,
+      "name": "__lt__sid",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "8d645e48-2e2509eb"
+    },
+    {
+      "domain": ".lme.jp",
+      "expiry": 1775876848,
+      "httpOnly": false,
+      "name": "_gid",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "GA1.2.1928210259.1775790424"
+    },
+    {
+      "domain": ".step.lme.jp",
+      "expiry": 1810350448,
+      "httpOnly": false,
+      "name": "__lt__cid",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "f513e8f5-bdf7-4755-a484-7dc47f09a831"
+    },
+    {
+      "domain": ".step.lme.jp",
+      "expiry": 1807326449,
+      "httpOnly": false,
+      "name": "__stripe_mid",
+      "path": "/",
+      "sameSite": "Strict",
+      "secure": true,
+      "value": "586ea21e-6a76-4c74-836e-719ca4f1b3bbedc576"
+    },
+    {
+      "domain": "step.lme.jp",
+      "expiry": 1775963248,
+      "httpOnly": true,
+      "name": "laravel_session",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "eyJpdiI6IldZemVRNWZkaGRsTDFWemNHK1Exb2c9PSIsInZhbHVlIjoiTjlBXC9XNlBSUlhrYUJ4RlRkaXF1a2FINmZ3d0paUzVPTW5qako4MVUrMXlGbUNqYmx4VmhCK3NCQ3F3TTNCSnc2U1NYTElxbDJUQUxneFwveUlKRlhqSnR5bnAwRzlTRjZrVEdYZEhxUENDSGJjR3lSV3Z3UVkzSDZzejFlZ3FkMCIsIm1hYyI6ImI1OGRkYzhjNmQ1YTBkMGU2ZTljM2MwMzk3ZTIzN2ViNDU0ZDVlYTU3YWUyNjQzYzczYjA5MzU3ZDUxMjUyNzQifQ%3D%3D"
+    },
+    {
+      "domain": ".lme.jp",
+      "expiry": 1810350448,
+      "httpOnly": false,
+      "name": "_ga_3M0VXFP41H",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "GS2.1.s1775790423$o1$g1$t1775790448$j35$l0$h0"
+    },
+    {
+      "domain": ".lme.jp",
+      "expiry": 1810350448,
+      "httpOnly": false,
+      "name": "_ga",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "GA1.2.78651344.1775790424"
+    },
+    {
+      "domain": ".step.lme.jp",
+      "expiry": 1775792249,
+      "httpOnly": false,
+      "name": "__stripe_sid",
+      "path": "/",
+      "sameSite": "Strict",
+      "secure": true,
+      "value": "3565a92a-d204-468f-ab05-ce2fdd9479018e764b"
+    },
+    {
+      "domain": ".lme.jp",
+      "expiry": 1810350448,
+      "httpOnly": false,
+      "name": "_ga_DH32M5PEHH",
+      "path": "/",
+      "sameSite": "Lax",
+      "secure": false,
+      "value": "GS2.1.s1775790448$o1$g0$t1775790448$j60$l0$h0"
+    }
+  ],
+  "local_storage": {
+    "__lt__cid": "f513e8f5-bdf7-4755-a484-7dc47f09a831",
+    "_gcl_ls": "{\"schema\":\"gcl\",\"version\":1,\"gcl_ctr\":{\"value\":{\"value\":0,\"timeouts\":0,\"errors\":0,\"eopCount\":0,\"creationTimeMs\":1775790423532},\"expires\":1783566423532}}",
+    "_grecaptcha": "09AKhCRwiKaWbbY-8IhJybmp-PW19Tb_B2lwRvBW0RqYtTV5NDzZ6NygJ5-E-RzuP-uYGyA8A05O4F0zNsgxBjxyXfbC6Aa6Ec-AAl7IQzEa66zi9SifbkFKy3tIrPj4TT",
+    "_uetsid": "597c8ac0348a11f1b2adcbc49406270c",
+    "_uetsid_exp": "Sat, 11 Apr 2026 03:07:28 GMT",
+    "_uetvid": "597cce80348a11f1a0bbe1944bdf0762",
+    "_uetvid_exp": "Wed, 05 May 2027 03:07:28 GMT",
+    "_yjsu_yjad": "1775790423.bab54b7a-6b8a-4499-9853-0529b68f462d",
+    "current_bot_new": "",
+    "current_user_new": "121463",
+    "remember_token_reset_pass_new": ""
+  },
+  "session_storage": {
+    "_cltk": "237q9t"
+  }
+}
