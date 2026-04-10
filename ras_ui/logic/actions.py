@@ -28,11 +28,13 @@ class ActionHandler:
         saver = LoginInfoSaver()
         try:
             driver = saver.load_session_and_open(Path("data/login_session.json"))
+            db_path = saver.save_friend_table_to_db(driver)
             opened_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             self.add_log(f"[{opened_at}] ログイン済み画面を開きました: {driver.current_url}")
+            self.add_log(f"[{opened_at}] ユーザ一覧テーブルをDBに保存しました: {db_path}")
             messagebox.showinfo(
                 "即時実行",
-                "保存済みセッションでブラウザを起動しました。\nログイン状態を確認してください。",
+                "保存済みセッションでブラウザを起動し、\nユーザ一覧テーブルをDBへ保存しました。",
             )
         except (FileNotFoundError, ValueError, json.JSONDecodeError) as exc:
             error_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")

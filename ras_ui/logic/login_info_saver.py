@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
@@ -20,6 +21,7 @@ class LoginSetting:
     login_id: str = "miomama0605@gmail.com"
     login_password: str = "20250606@Mio"
     output_path: Path = Path("data/login_session.json")
+    friend_table_db_path: Path = Path("data/friend_list.db")
 
 
 class LoginInfoSaver:
@@ -139,6 +141,83 @@ class LoginInfoSaver:
         driver.get(self.setting.friend_list_url)
         return driver
 
+    def save_friend_table_to_db(self, driver: webdriver.Chrome) -> Path:
+        rows = driver.find_elements(By.CSS_SELECTOR, "#tableLineUser tbody tr")
+        parsed_rows: list[dict[str, str]] = []
+
+        for row in rows:
+            if "display: none" in (row.get_attribute("style") or "").lower():
+                continue
+
+            cells = row.find_elements(By.TAG_NAME, "td")
+            if len(cells) < 7:
+                continue
+
+            parsed_rows.append(
+                {
+                    "row_no": self._normalize_cell_text(cells[0].text),
+                    "friend_added_at": self._normalize_cell_text(cells[1].text),
+                    "latest_message_at": self._normalize_cell_text(cells[2].text),
+                    "line_registered_name": self._normalize_cell_text(cells[3].text),
+                    "system_display_name": self._normalize_cell_text(cells[4].text),
+                    "email_address": self._normalize_cell_text(cells[5].text),
+                    "step_delivery_status": self._normalize_cell_text(cells[6].text),
+                }
+            )
+
+        db_path = self.setting.friend_table_db_path
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        scraped_at = datetime.now().isoformat()
+
+        with sqlite3.connect(db_path) as conn:
+            conn.execute(
+                """
+                CREATE TABLE IF NOT EXISTS line_user_table (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    scraped_at TEXT NOT NULL,
+                    row_no TEXT,
+                    friend_added_at TEXT,
+                    latest_message_at TEXT,
+                    line_registered_name TEXT,
+                    system_display_name TEXT,
+                    email_address TEXT,
+                    step_delivery_status TEXT
+                )
+                """
+            )
+            conn.execute("DELETE FROM line_user_table")
+            conn.executemany(
+                """
+                INSERT INTO line_user_table (
+                    scraped_at,
+                    row_no,
+                    friend_added_at,
+                    latest_message_at,
+                    line_registered_name,
+                    system_display_name,
+                    email_address,
+                    step_delivery_status
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                [
+                    (
+                        scraped_at,
+                        row["row_no"],
+                        row["friend_added_at"],
+                        row["latest_message_at"],
+                        row["line_registered_name"],
+                        row["system_display_name"],
+                        row["email_address"],
+                        row["step_delivery_status"],
+                    )
+                    for row in parsed_rows
+                ],
+            )
+            conn.commit()
+
+        return db_path
+    
     @staticmethod
     def _read_session_file(path: Path) -> dict[str, Any]:
         if not path.exists():
@@ -161,6 +240,11 @@ class LoginInfoSaver:
             if key in cookie and cookie[key] is not None:
                 normalized[key] = cookie[key]
         return normalized
+    
+    @staticmethod
+    def _normalize_cell_text(value: str) -> str:
+        compact = " ".join(value.split())
+        return compact if compact else "-"
     
     @staticmethod
     def _find_first(
