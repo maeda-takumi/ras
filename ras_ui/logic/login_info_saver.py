@@ -12,6 +12,8 @@ from typing import Any
 from selenium import webdriver
 from selenium.common.exceptions import InvalidSessionIdException, NoSuchElementException, WebDriverException
 from selenium.webdriver.common.by import By
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.support.ui import WebDriverWait
 
 
 @dataclass(frozen=True)
@@ -142,6 +144,11 @@ class LoginInfoSaver:
         return driver
 
     def save_friend_table_to_db(self, driver: webdriver.Chrome) -> Path:
+        driver.get(self.setting.friend_list_url)
+        WebDriverWait(driver, 15).until(
+            EC.presence_of_element_located((By.CSS_SELECTOR, "#tableLineUser tbody tr"))
+        )
+
         rows = driver.find_elements(By.CSS_SELECTOR, "#tableLineUser tbody tr")
         parsed_rows: list[dict[str, str]] = []
 
