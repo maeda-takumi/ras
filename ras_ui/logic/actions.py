@@ -28,6 +28,7 @@ class ActionHandler:
         saver = LoginInfoSaver()
         try:
             driver = saver.load_session_and_open(Path("data/login_session.json"))
+            driver.get(saver.setting.friend_list_url)
             db_path = saver.save_friend_table_to_db(driver)
             opened_at = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
             self.add_log(f"[{opened_at}] ログイン済み画面を開きました: {driver.current_url}")
