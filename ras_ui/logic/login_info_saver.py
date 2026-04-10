@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import json
 import sqlite3
+from collections import OrderedDict
 from dataclasses import dataclass
 from datetime import datetime
 from pathlib import Path
+from urllib.parse import urljoin
 from typing import Any
 
 from selenium import webdriver
@@ -144,33 +146,7 @@ class LoginInfoSaver:
         return driver
 
     def save_friend_table_to_db(self, driver: webdriver.Chrome) -> Path:
-        driver.get(self.setting.friend_list_url)
-        WebDriverWait(driver, 15).until(
-            EC.presence_of_element_located((By.CSS_SELECTOR, "#tableLineUser tbody tr"))
-        )
-
-        rows = driver.find_elements(By.CSS_SELECTOR, "#tableLineUser tbody tr")
-        parsed_rows: list[dict[str, str]] = []
-
-        for row in rows:
-            if "display: none" in (row.get_attribute("style") or "").lower():
-                continue
-
-            cells = row.find_elements(By.TAG_NAME, "td")
-            if len(cells) < 7:
-                continue
-
-            parsed_rows.append(
-                {
-                    "row_no": self._normalize_cell_text(cells[0].text),
-                    "friend_added_at": self._normalize_cell_text(cells[1].text),
-                    "latest_message_at": self._normalize_cell_text(cells[2].text),
-                    "line_registered_name": self._normalize_cell_text(cells[3].text),
-                    "system_display_name": self._normalize_cell_text(cells[4].text),
-                    "email_address": self._normalize_cell_text(cells[5].text),
-                    "step_delivery_status": self._normalize_cell_text(cells[6].text),
-                }
-            )
+        parsed_rows = self._collect_friend_rows_from_all_pages(driver)
 
         db_path = self.setting.friend_table_db_path
         db_path.parent.mkdir(parents=True, exist_ok=True)
@@ -182,6 +158,7 @@ class LoginInfoSaver:
                 CREATE TABLE IF NOT EXISTS line_user_table (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     scraped_at TEXT NOT NULL,
+                    detail_url TEXT UNIQUE,
                     row_no TEXT,
                     friend_added_at TEXT,
                     latest_message_at TEXT,
@@ -192,11 +169,12 @@ class LoginInfoSaver:
                 )
                 """
             )
-            conn.execute("DELETE FROM line_user_table")
+            self._ensure_line_user_table_schema(conn)
             conn.executemany(
                 """
                 INSERT INTO line_user_table (
                     scraped_at,
+                    detail_url,
                     row_no,
                     friend_added_at,
                     latest_message_at,
@@ -205,11 +183,21 @@ class LoginInfoSaver:
                     email_address,
                     step_delivery_status
                 )
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(detail_url) DO UPDATE SET
+                    scraped_at = excluded.scraped_at,
+                    row_no = excluded.row_no,
+                    friend_added_at = excluded.friend_added_at,
+                    latest_message_at = excluded.latest_message_at,
+                    line_registered_name = excluded.line_registered_name,
+                    system_display_name = excluded.system_display_name,
+                    email_address = excluded.email_address,
+                    step_delivery_status = excluded.step_delivery_status
                 """,
                 [
                     (
                         scraped_at,
+                        row["detail_url"],
                         row["row_no"],
                         row["friend_added_at"],
                         row["latest_message_at"],
@@ -224,6 +212,90 @@ class LoginInfoSaver:
             conn.commit()
 
         return db_path
+    
+    def _collect_friend_rows_from_all_pages(self, driver: webdriver.Chrome) -> list[dict[str, str]]:
+        visited_page_urls: set[str] = set()
+        unique_rows_by_url: "OrderedDict[str, dict[str, str]]" = OrderedDict()
+        fallback_rows: list[dict[str, str]] = []
+
+        while True:
+            current_url = driver.current_url
+            if current_url in visited_page_urls:
+                break
+            visited_page_urls.add(current_url)
+
+            for row in self._parse_visible_rows(driver):
+                detail_url = row["detail_url"]
+                if detail_url:
+                    unique_rows_by_url[detail_url] = row
+                else:
+                    fallback_rows.append(row)
+
+            next_page_url = self._find_unvisited_page_url(driver, visited_page_urls)
+            if not next_page_url:
+                break
+            driver.get(next_page_url)
+
+        return [*unique_rows_by_url.values(), *fallback_rows]
+
+    def _parse_visible_rows(self, driver: webdriver.Chrome) -> list[dict[str, str]]:
+        rows = driver.find_elements(By.CSS_SELECTOR, "#tableLineUser tbody tr")
+        parsed_rows: list[dict[str, str]] = []
+
+        for row in rows:
+            if "display: none" in (row.get_attribute("style") or "").lower():
+                continue
+
+            cells = row.find_elements(By.TAG_NAME, "td")
+            if len(cells) < 7:
+                continue
+
+            parsed_rows.append(
+                {
+                    "detail_url": self._extract_detail_url(row, driver.current_url),
+                    "row_no": self._normalize_cell_text(cells[0].text),
+                    "friend_added_at": self._normalize_cell_text(cells[1].text),
+                    "latest_message_at": self._normalize_cell_text(cells[2].text),
+                    "line_registered_name": self._normalize_cell_text(cells[3].text),
+                    "system_display_name": self._normalize_cell_text(cells[4].text),
+                    "email_address": self._normalize_cell_text(cells[5].text),
+                    "step_delivery_status": self._normalize_cell_text(cells[6].text),
+                }
+            )
+        return parsed_rows
+
+    @staticmethod
+    def _extract_detail_url(row, current_url: str) -> str:
+        anchors = row.find_elements(By.CSS_SELECTOR, "a[href]")
+        for anchor in anchors:
+            href = (anchor.get_attribute("href") or "").strip()
+            if "/basic/friendlist/my_page/" in href:
+                return urljoin(current_url, href)
+        return "-"
+
+    @staticmethod
+    def _find_unvisited_page_url(driver: webdriver.Chrome, visited_page_urls: set[str]) -> str | None:
+        page_anchors = driver.find_elements(By.CSS_SELECTOR, "ul.pagenavi li a[href]")
+        for anchor in page_anchors:
+            href = (anchor.get_attribute("href") or "").strip()
+            if not href:
+                continue
+            absolute_href = urljoin(driver.current_url, href)
+            if absolute_href not in visited_page_urls:
+                return absolute_href
+        return None
+
+    @staticmethod
+    def _ensure_line_user_table_schema(conn: sqlite3.Connection) -> None:
+        columns = {
+            row[1]
+            for row in conn.execute("PRAGMA table_info(line_user_table)").fetchall()
+        }
+        if "detail_url" not in columns:
+            conn.execute("ALTER TABLE line_user_table ADD COLUMN detail_url TEXT")
+        conn.execute(
+            "CREATE UNIQUE INDEX IF NOT EXISTS idx_line_user_table_detail_url ON line_user_table(detail_url)"
+        )
     
     @staticmethod
     def _read_session_file(path: Path) -> dict[str, Any]:
